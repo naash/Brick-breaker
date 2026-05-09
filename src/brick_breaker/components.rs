@@ -45,10 +45,6 @@ pub enum BrickType {
     Unbreakable,
 }
 
-/// Marks an entity as the ball
-#[derive(Debug, Clone, Copy)]
-pub struct Ball;
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum GameState {
     WaitingToLaunch,

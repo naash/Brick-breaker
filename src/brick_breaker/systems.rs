@@ -30,10 +30,10 @@ use super::components::{
 };
 use crate::brick_breaker::{
     actions::{
-        BallPaddleCollisionAction, 
+        BallPaddleCollisionAction,
         DestroyBrickAction
-    }, 
-    brick_spawner::*, 
+    },
+    brick_spawner::{spawn_brick_grid, default_brick_grid_config},
     components::GameState
 };
 use std::any::TypeId;
@@ -46,12 +46,12 @@ pub struct BrickBreakerSystem {
 }
 
 impl BrickBreakerSystem {
-    pub fn new(ball_id: u32, paddle_id: u32, game_manager_id: u32, paddle_start_x: f32) -> Self {
+    pub fn new(ball_id: u32, paddle_id: u32, game_manager_id: u32) -> Self {
         Self {
             ball_id,
             paddle_id,
             game_manager_id,
-            paddle_start_x
+            paddle_start_x: 0.0,
         }
     }
 
@@ -63,16 +63,7 @@ impl BrickBreakerSystem {
             }
 
         // Respawn bricks
-        let config = BrickGridConfig {
-            rows: 5,
-            columns: 10,
-            brick_width: 3.0,
-            brick_height: 1.5,
-            spacing: 0.2,
-            start_position: Vec3::new(0.0, 12.0, 0.0),
-        };
-        
-        spawn_brick_grid(update_context.world, config);
+        spawn_brick_grid(update_context.world, default_brick_grid_config());
 
         // Reset ball
         if let Some(rb) = update_context.world.entity_manager
@@ -108,7 +99,11 @@ impl BrickBreakerSystem {
 }
 
 impl System for BrickBreakerSystem {
-    fn initialize(&mut self, _world: &mut World) -> Result<(), Box<dyn std::error::Error>> {
+    fn initialize(&mut self, world: &mut World) -> Result<(), Box<dyn std::error::Error>> {
+        self.paddle_start_x = world.entity_manager
+            .get_component::<Transform>(self.paddle_id)
+            .map(|t| t.position.x)
+            .unwrap_or(0.0);
         Ok(())
     }
 
@@ -160,6 +155,13 @@ impl System for BrickBreakerSystem {
             .unwrap_or(0.0);
 
         if ball_y < -20.0 {
+            if let Some(rb) = update_context.world.entity_manager
+                .get_component_mut::<RigidBody>(self.ball_id)
+            {
+                rb.velocity = Vec3::ZERO;
+                rb.is_kinematic = true;
+            }
+
             if let Some(state) = update_context.world.entity_manager
                 .get_component_mut::<BrickBreakerState>(self.game_manager_id)
             {

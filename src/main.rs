@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-use std::collections::HashSet;
-
 use mithya_engine::{
     Transform, 
     engine::{ Engine, EngineConfig, EntityBuilder, GameLogic, World, system::SystemsManager}, 
@@ -18,7 +16,7 @@ mod brick_breaker;
 
 use crate::brick_breaker::{
     brick_spawner::*, components::{
-        Ball, BrickBreakerState, BrickType, GameState
+        BrickBreakerState, GameState
     }, layers::{LAYER_BALL, LAYER_BRICK, LAYER_PADDLE, LAYER_WALL}, systems::BrickBreakerSystem
 };
 use winit::keyboard::KeyCode;
@@ -53,7 +51,7 @@ impl GameLogic for Brickbreaker {
         let paddle_id = spawn_paddle(world);
         
         // === BRICKS ===
-        spawn_bricks(world);
+        spawn_brick_grid(world, default_brick_grid_config());
 
         // === WALLS ===
         spawn_walls(world);
@@ -63,7 +61,7 @@ impl GameLogic for Brickbreaker {
         
         let game_manager_id = spawn_game_manager(world);
 
-        let brick_breaker_system = BrickBreakerSystem::new(ball_id, paddle_id, game_manager_id, 0.0);
+        let brick_breaker_system = BrickBreakerSystem::new(ball_id, paddle_id, game_manager_id);
         systems_manager.add_system(brick_breaker_system, world);
 
         //Bindings
@@ -265,7 +263,6 @@ fn spawn_ball(world: &mut World) -> u32 {
             mask: LAYER_WALL | LAYER_PADDLE | LAYER_BRICK,
             ..Default::default()
         })
-        .with(Ball)  // Mark as ball for game logic
         .build()
 }
 
@@ -310,19 +307,6 @@ fn spawn_paddle(world: &mut World) -> u32 {
     paddle_id
 }
 
-fn spawn_bricks(world: &mut World) -> HashSet<u32> {
-    // Option 1: Spawn a full grid
-    let config = BrickGridConfig {
-        rows: 5,
-        columns: 10,
-        brick_width: 3.0,
-        brick_height: 1.2,
-        spacing: 0.3,
-        start_position: Vec3::new(0.0, 12.0, 0.0),
-    };
-    spawn_brick_grid(world, config)
-}
-
 fn spawn_camera(world: &mut World) {
     EntityBuilder::new(&mut world.entity_manager)
         .with(Transform::default())
@@ -336,18 +320,3 @@ fn spawn_game_manager(world: &mut World) -> u32 {
         .build()
 }
 
-// Helper function for testing individual bricks
-#[allow(dead_code)]
-fn spawn_test_bricks(world: &mut World) {
-    // Just a few bricks for testing
-    for i in 0..3 {
-        spawn_brick(
-            world,
-            Vec3::new(-6.0 + (i as f32 * 3.5), 10.0, 0.0),
-            3.0,
-            1.5,
-            BrickType::Normal,
-            "unlit_texture_red",
-        );
-    }
-}
