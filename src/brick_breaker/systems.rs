@@ -39,10 +39,10 @@ use crate::brick_breaker::{
 use std::any::TypeId;
 
 pub struct BrickBreakerSystem {
-    pub ball_id: u32,
-    pub paddle_id: u32,
-    pub game_manager_id: u32,
-    pub paddle_start_x: f32
+    ball_id: u32,
+    paddle_id: u32,
+    game_manager_id: u32,
+    paddle_start_x: f32
 }
 
 impl BrickBreakerSystem {

@@ -6,7 +6,6 @@
 /// Marks an entity as a brick
 #[derive(Debug, Clone)]
 pub struct Brick {
-    pub brick_type: BrickType,
     pub health: u32,
     pub points: u32,
 }
@@ -16,25 +15,16 @@ impl Brick {
         let (health, points) = match brick_type {
             BrickType::Normal => (1, 10),
             BrickType::Strong => (2, 20),
-            BrickType::Unbreakable => (999, 0),
         };
-        
-        Self {
-            brick_type,
-            health,
-            points,
-        }
+
+        Self { health, points }
     }
-    
+
     pub fn take_damage(&mut self) -> bool {
         if self.health > 0 {
             self.health -= 1;
         }
-        self.health <= 0
-    }
-    
-    pub fn is_destroyed(&self) -> bool {
-        self.health <= 0
+        self.health == 0
     }
 }
 
@@ -42,7 +32,6 @@ impl Brick {
 pub enum BrickType {
     Normal,
     Strong,
-    Unbreakable,
 }
 
 #[derive(Debug, Clone, PartialEq)]

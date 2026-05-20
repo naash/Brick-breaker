@@ -9,7 +9,7 @@ use mithya_engine::{
     physics::{Collider, ColliderShape},
     Transform,
 };
-use glam::{Quat, Vec3};
+use glam::Vec3;
 use crate::brick_breaker::layers::{LAYER_BALL, LAYER_BRICK};
 
 use super::components::{Brick, BrickType};
@@ -74,7 +74,7 @@ pub fn spawn_brick_grid(world: &mut World, config: BrickGridConfig) {
 }
 
 /// Spawn a single brick
-pub fn spawn_brick(
+fn spawn_brick(
     world: &mut World,
     position: Vec3,
     width: f32,
@@ -85,8 +85,8 @@ pub fn spawn_brick(
     EntityBuilder::new(&mut world.entity_manager)
         .with(Transform {
             position,
-            rotation: Quat::IDENTITY,
             scale: Vec3::new(width, height, 1.0),
+            ..Default::default()
         })
         .with(Render {
             mesh: Mesh::new_quad_textured(),

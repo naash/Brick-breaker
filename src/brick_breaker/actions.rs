@@ -76,18 +76,9 @@ pub struct DestroyBrickAction {
 
 impl NamedEngineAction for DestroyBrickAction {
     fn execute(self: Box<Self>, world: &mut World) {
-
-         // Apply damage
-        if let Some(brick) = world.entity_manager
-            .get_component_mut::<Brick>(self.brick_id)
-        {
-            brick.take_damage();
-        }
-
-        // Check destruction and get points in one call
         let (is_destroyed, points) = world.entity_manager
-            .get_component::<Brick>(self.brick_id)
-            .map(|b| (b.is_destroyed(), b.points))
+            .get_component_mut::<Brick>(self.brick_id)
+            .map(|b| (b.take_damage(), b.points))
             .unwrap_or((false, 0));
 
         if is_destroyed {
@@ -111,12 +102,11 @@ pub struct ResetGameAction {
 impl NamedEngineAction for ResetGameAction {
     fn execute(self: Box<Self>, world: &mut World) {
         
-        //Only do the action if state is valid
         if let Some(state) = world.entity_manager
             .get_component_mut::<BrickBreakerState>(self.game_manager_id)
         {
-            if state.state == GameState::Playing {
-                return;  // only reset not playing
+            if state.state != GameState::GameOver && state.state != GameState::Won {
+                return;
             }
 
             state.state = GameState::Resetting;
